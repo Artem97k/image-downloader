@@ -1,6 +1,7 @@
 module ImageDownloader
   class UrlExtractor
     SEPARATOR = /\s+/
+    URL_REGEXP = %r{^(http|https):\/\/\w+\.[a-z]{2,5}.+}
 
     def initialize(file_name)
       @file_name = file_name
@@ -26,6 +27,9 @@ module ImageDownloader
     def extract_urls
       urls = @string.strip.split(SEPARATOR).uniq
       return puts 'Empty file!' if urls.empty?
+
+      urls.filter! { |url| url.match?(URL_REGEXP) }
+      return puts 'No valid URLs!' if urls.empty?
 
       urls
     end
