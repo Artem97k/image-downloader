@@ -63,10 +63,10 @@ module ImageDownloader
     end
 
     def save_images
-      @responses.each { |response| save_image(response) }
+      @responses.each_with_index { |response, index| save_image(response, index) }
     end
 
-    def save_image(response)
+    def save_image(response, index)
       return unless response.code == '200'
 
       body = response.body
@@ -75,7 +75,7 @@ module ImageDownloader
 
       return if body.empty? || extension.nil?
 
-      path = DateTime.now.to_s + extension
+      path = "#{DateTime.now.to_s}-#{index.to_s}-#{extension}"
       file = File.open(path, 'wb')
       file.write body
     rescue IOError
