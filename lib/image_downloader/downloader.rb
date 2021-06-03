@@ -5,6 +5,7 @@ module ImageDownloader
   class Downloader
     MIME_TYPES = {
       "image/jpeg" => ".jpeg",
+      "image/webp" => ".webp",
       "image/png" => ".png",
       "image/gif" => ".gif",
       "image/bmp" => ".bpm",
@@ -15,6 +16,8 @@ module ImageDownloader
     def initialize(urls, directory_path)
       @directory_path = directory_path
       @urls = urls
+      @mutex = Mutex.new
+      @responses = []
     end
 
     def call
@@ -36,25 +39,23 @@ module ImageDownloader
 
     def get_images
       threads = []
-      mutex = Mutex.new
-      responses = []
       @urls.each do |url|
         threads << Thread.new(url) do |url|
-          response = get_response(url)
-          mutex.synchronize { responses << response }
+          get_response(url)
         end
       end
-      @responses = responses.compact
+      @responses.compact!
       threads.each(&:join)
     end
 
     def get_response(url)
       url = URI(url)
       ssl = url.is_a? URI::HTTPS
-      Net::HTTP.start(url.host, url.port, use_ssl: ssl) do |http|
+      response = Net::HTTP.start(url.host, url.port, use_ssl: ssl) do |http|
         request = Net::HTTP::Get.new url
         http.request request
       end
+      @mutex.synchronize { @responses << response }
     rescue URI::InvalidURIError
       puts 'Invalid URL found!'
     rescue Net::ReadTimeout, Net::OpenTimeout, SocketError, Errno::ECONNREFUSED
@@ -74,7 +75,7 @@ module ImageDownloader
 
       return if body.empty? || extension.nil?
 
-      path = [@folder_path, DateTime.now.to_s, extension].join
+      path = DateTime.now.to_s + extension
       file = File.open(path, 'wb')
       file.write body
     rescue IOError
