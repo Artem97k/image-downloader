@@ -1,7 +1,7 @@
 module ImageDownloader
   class UrlExtractor
     SEPARATOR = /\s+/
-    URL_REGEXP = %r{^(http|https):\/\/\w+\.[a-z]{2,5}.+}
+    URL_REGEXP = %r{^(http|https):\/\/[^.]+\.[^.]+}
 
     def initialize(file_name)
       @file_name = file_name
