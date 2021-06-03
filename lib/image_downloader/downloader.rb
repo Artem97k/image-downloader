@@ -1,6 +1,5 @@
 require 'net/http'
 require 'date'
-require 'concurrent-ruby'
 
 module ImageDownloader
   class Downloader
@@ -13,24 +12,40 @@ module ImageDownloader
       "image/webm" => ".webm"
     }.freeze
 
-    def initialize(urls, folder_path)
-      @folder_path = folder_path
+    def initialize(urls, directory_path)
+      @directory_path = directory_path
       @urls = urls
-      @pool = Concurrent::FixedThreadPool.new(5)
-      @responses = Concurrent::Array.new
     end
 
     def call
       get_images
+      make_directory
       save_images
     end
 
     private
 
+    def make_directory
+      Dir.mkdir @directory_path unless File.directory? @directory_path
+      Dir.chdir @directory_path
+    rescue Errno::ENOENT
+      puts 'Directory not found!'
+    rescue Errno::EROFS
+      puts 'Read-only  directory!'
+    end
+
     def get_images
+      threads = []
+      mutex = Mutex.new
+      responses = []
       @urls.each do |url|
-        @pool.post { @responses << get_response(url) }
+        threads << Thread.new(url) do |url|
+          response = get_response(url)
+          mutex.synchronize { responses << response }
+        end
       end
+      @responses = responses.compact
+      threads.each(&:join)
     end
 
     def get_response(url)
@@ -51,6 +66,8 @@ module ImageDownloader
     end
 
     def save_image(response)
+      return unless response.code == '200'
+
       body = response.body
       content_type = response['content-type']
       extension = MIME_TYPES[content_type]
