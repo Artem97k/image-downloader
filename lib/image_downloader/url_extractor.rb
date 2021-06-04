@@ -26,10 +26,13 @@ module ImageDownloader
 
     def extract_urls
       urls = @string.strip.split(SEPARATOR).uniq
-      return puts 'Empty file!' if urls.empty?
+      if urls.empty?
+        puts 'Empty file!'
+        return urls
+      end
 
       urls.filter! { |url| url.match?(URL_REGEXP) }
-      return puts 'No valid URLs!' if urls.empty?
+      puts 'No valid URLs!' if urls.empty?
 
       urls
     end
