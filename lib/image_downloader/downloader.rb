@@ -5,6 +5,7 @@ module ImageDownloader
   class Downloader
     MIME_TYPES = {
       "image/jpeg" => ".jpeg",
+      "image/jpg" => ".jpg",
       "image/webp" => ".webp",
       "image/png" => ".png",
       "image/gif" => ".gif",
