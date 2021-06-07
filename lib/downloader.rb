@@ -24,13 +24,13 @@ class Downloader
   end
 
   def call(url)
-    @pool.post(url) do |url|
+    pool.post(url) do |url|
       fetch_image(url)
     end
   end
 
   def shutdown
-    @pool.shutdown
+    pool.shutdown
   end
 
   def make_directory
@@ -42,6 +42,8 @@ class Downloader
   end
 
   private
+
+  attr_accessor :pool
 
   def fetch_image(url)
     url = URI(url)
@@ -66,9 +68,7 @@ class Downloader
 
     return if body.empty? || extension.nil?
 
-    date = DateTime.now
-    digest = Digest::MD5.hexdigest(url.to_s)
-    path = "#{directory_path}/#{date}-#{digest}-#{extension}"
+    path = file_path(url, extension)
     file = File.open(path, 'wb')
     file.write body
     file.close
@@ -76,5 +76,11 @@ class Downloader
     puts 'Error writing to file!'
   rescue Errno::EPERM
     puts 'No permission to write!'
+  end
+
+  def file_path(url, extension)
+    date = DateTime.now
+    digest = Digest::MD5.hexdigest(url.to_s)
+    "#{directory_path}/#{date}-#{digest}-#{extension}"
   end
 end
