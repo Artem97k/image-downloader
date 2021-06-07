@@ -13,12 +13,12 @@ RSpec.describe ImageDownloader do
       f.puts url1
       f.puts url2
       f.close
-      stub_request(:get, 'https://example.com/1 ').to_return(status: 200,
-                                                              body: 'body1',
-                                                              headers: response_headers)
-      stub_request(:get, 'http://example.com/2').to_return(status: 200,
-                                                            body: 'body2',
-                                                            headers: response_headers)
+      stub_request(:get, url1).to_return(status: 200,
+                                         body: 'body1',
+                                         headers: response_headers)
+      stub_request(:get, url2).to_return(status: 200,
+                                         body: 'body2',
+                                         headers: response_headers)
     end
 
     after do

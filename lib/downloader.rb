@@ -33,6 +33,10 @@ class Downloader
     Concurrent::Promise.zip(*promises).value!
   end
 
+  private
+
+  attr_accessor :promises
+
   def make_directory
     Dir.mkdir directory_path unless File.directory? directory_path
   rescue Errno::ENOENT
@@ -40,10 +44,6 @@ class Downloader
   rescue Errno::EROFS
     puts 'Read-only  directory!'
   end
-
-  private
-
-  attr_accessor :promises
 
   def fetch_image(url)
     url = URI(url)
