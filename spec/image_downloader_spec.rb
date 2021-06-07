@@ -1,11 +1,11 @@
 RSpec.describe ImageDownloader do
   context 'with file containing two valid urls' do
-    let(:url1) { 'https://examaple.com/1' }
-    let(:url2) { 'http://examaple.com/2' }
+    let(:url1) { 'https://example.com/1' }
+    let(:url2) { 'http://example.com/2' }
     let(:content_type) { "image/jpg" }
     let(:response_headers) { { "Content-Type" => content_type } }
     let(:directory_name) { 'imgs' }
-    let(:file_name) { 'example.txt' }
+    let(:file_name) { 'example1.txt' }
     subject { Dir.children(directory_name).size }
 
     before do
@@ -13,10 +13,10 @@ RSpec.describe ImageDownloader do
       f.puts url1
       f.puts url2
       f.close
-      stub_request(:get, 'https://examaple.com/1 ').to_return(status: 200,
+      stub_request(:get, 'https://example.com/1 ').to_return(status: 200,
                                                               body: 'body1',
                                                               headers: response_headers)
-      stub_request(:get, 'http://examaple.com/2').to_return(status: 200,
+      stub_request(:get, 'http://example.com/2').to_return(status: 200,
                                                             body: 'body2',
                                                             headers: response_headers)
     end
@@ -28,7 +28,6 @@ RSpec.describe ImageDownloader do
 
     it 'save two file on disk' do
       described_class.new([file_name, directory_name]).call
-      sleep 0.1
       expect(subject).to eq 2
     end
   end
@@ -37,7 +36,7 @@ RSpec.describe ImageDownloader do
     let(:url1) { 'invalid' }
     let(:url2) { 'invalid2' }
     let(:directory_name) { 'imgs' }
-    let(:file_name) { 'example.txt' }
+    let(:file_name) { 'example2.txt' }
     subject { Dir.children(directory_name).size }
 
     before do
@@ -54,7 +53,6 @@ RSpec.describe ImageDownloader do
 
     it 'does not save files on  disk' do
       described_class.new([file_name, directory_name]).call
-      sleep 0.1
       expect(subject).to eq 0
     end
   end

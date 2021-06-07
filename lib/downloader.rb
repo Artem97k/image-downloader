@@ -19,18 +19,18 @@ class Downloader
 
   def initialize(directory_path)
     @directory_path = directory_path
-    @pool = Concurrent::FixedThreadPool.new(4)
+    @promises = []
     make_directory
   end
 
   def call(url)
-    pool.post(url) do |url|
+    promises << Concurrent::Promise.execute do
       fetch_image(url)
     end
   end
 
   def shutdown
-    pool.shutdown
+    Concurrent::Promise.zip(*promises).value!
   end
 
   def make_directory
@@ -43,7 +43,7 @@ class Downloader
 
   private
 
-  attr_accessor :pool
+  attr_accessor :promises
 
   def fetch_image(url)
     url = URI(url)
@@ -69,6 +69,7 @@ class Downloader
     return if body.empty? || extension.nil?
 
     path = file_path(url, extension)
+
     file = File.open(path, 'wb')
     file.write body
     file.close
