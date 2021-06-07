@@ -1,4 +1,4 @@
 require_relative 'lib/image_downloader'
 
-ImageDownloader.call(ARGV)
+ImageDownloader.new(ARGV).call
 exit
