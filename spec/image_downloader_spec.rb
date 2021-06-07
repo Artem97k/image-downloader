@@ -6,10 +6,12 @@ RSpec.describe ImageDownloader do
     let(:response_headers) { { "Content-Type" => content_type } }
     let(:directory_name) { 'imgs' }
     let(:file_name) { 'example.txt' }
+    subject { Dir.children(directory_name).size }
 
     before do
       f = File.open(file_name, 'w')
-      f.write(url1 + "\n" + url2)
+      f.puts url1
+      f.puts url2
       f.close
       stub_request(:get, 'https://examaple.com/1 ').to_return(status: 200,
                                                               body: 'body1',
@@ -20,14 +22,14 @@ RSpec.describe ImageDownloader do
     end
 
     after do
-      Dir.chdir('../')
-      File.delete(file_name) if File.exists?(file_name)
+      File.delete(file_name) if File.exist?(file_name)
       FileUtils.rm_rf(Dir[directory_name]) if File.directory?(directory_name)
     end
 
     it 'save two file on disk' do
-      described_class.call([file_name, directory_name])
-      expect(Dir.children('.').size).to eq 2
+      described_class.new([file_name, directory_name]).call
+      sleep 0.1
+      expect(subject).to eq 2
     end
   end
 
@@ -36,22 +38,24 @@ RSpec.describe ImageDownloader do
     let(:url2) { 'invalid2' }
     let(:directory_name) { 'imgs' }
     let(:file_name) { 'example.txt' }
+    subject { Dir.children(directory_name).size }
 
     before do
       f = File.open(file_name, 'w')
-      f.write(url1 + "\n" + url2)
+      f.puts url1
+      f.puts url2
       f.close
     end
 
     after do
-      Dir.chdir('../')
-      File.delete(file_name) if File.exists?(file_name)
+      File.delete(file_name) if File.exist?(file_name)
       FileUtils.rm_rf(Dir[directory_name]) if File.directory?(directory_name)
     end
 
     it 'does not save files on  disk' do
-      described_class.call([file_name, directory_name])
-      expect(Dir.children('.').size).to eq 0
+      described_class.new([file_name, directory_name]).call
+      sleep 0.1
+      expect(subject).to eq 0
     end
   end
 end
